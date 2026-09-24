@@ -1,0 +1,16 @@
+# build artifacts and CMake garbage
+build/
+build-release/
+
+# stray binaries from the single-file g++ build task
+*.exe
+
+# vscode settings
+.vscode/
+
+# .txt files except CMakeLists and test input
+*.txt
+!CMakeLists.txt
+!input.txt
+!coroutine_syntax.txt
+!bytecode_spec.txt

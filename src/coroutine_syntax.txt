@@ -1,0 +1,34 @@
+// Yields TYield, receives void implicitly, returns void implicitly
+coro<TYield> func_name(...) { ... }
+
+// Yields TYield, receives TResume, returns void implicitly
+coro<TYield, TResume> func_name(...) { ... }
+
+// Yields TYield, receives TResume, returns TReturn
+coro<TYield, TResume, TReturn> func_name(...) { ... }
+
+// You can only call coroutines from other coroutines, so the type system can prove you're not trying to yield from the main stack
+coro<int, void, int> counter(int val) {
+	int i = 0;
+	while (i < val) {
+		yield(i);
+		i += 1;
+	}
+	return i;
+}
+
+int main() {
+	int x = counter(10); // ERROR: Cannot call into a coroutine directly from a sync function
+
+	int x;
+	var g = new coro<int, void, int>(counter, 10); // creates reference counted coroutine object, args for actual function come after func name
+
+	// begins coroutine until first yield point, then stores yielded value from g.value() - default value of 0 for all types if not yet called
+	// returns true if it hit a yield point, returns false if coroutine returned
+	while g.resume() {
+		print(g.value()); // 0, 1...9
+	}
+	print("Returned value was ", g.final()); // 10
+
+	return 0;
+}

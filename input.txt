@@ -1,0 +1,184 @@
+# Pseudo-script exercising every lexer token type.
+# This whole line is a comment.
+
+const int MAX = 100; # trailing comment after a statement
+float ratio = 3.14;
+float half = .5;      # leading-dot float
+bool done = false;
+char initial = 'h';
+char newline = '\n';
+char tab = '\t';
+char quote = '\'';
+char backslash = '\\';
+str greeting = "hello";
+str escaped = "line1\nline2\tend\\slash\"quote\"";
+var inferred = 42;    # type inference
+str nothing = null;
+
+import math;
+import collections;
+
+struct Person {
+    str name;
+    int age;
+}
+
+class Point {
+    int x;
+    int y;
+}
+
+class Box<T> {
+    T value;
+}
+
+enum Color { RED, GREEN, BLUE }
+
+arr<int> nums = [1, 2, 3];
+
+Point origin = new Point();
+weak<Point> weak_ref = origin;   # weak references are classes only
+
+int x = 0;
+int y = 1;
+bool a = false;
+
+# Function pointers
+
+int add(int x, int y) {
+    return x + y;
+}
+
+int sub(int x, int y) {
+    return x - y;
+}
+
+void log_value(int v) {
+    print(v);
+}
+
+func<int (int, int)> my_op = add;
+my_op = sub;
+
+# using to alias type names
+
+using CumulativeOperation = func<float (arr<float>)>;
+
+# also for disambiguating collisions
+# say we have a function from module "my_funcs" called "list" that prints all items from an array
+# we can either do
+
+my_funcs.list(some_arr);
+# or
+using print_items = my_funcs.list;
+print_items(some_arr);
+
+# do not need module name when calling imported function if no collision exists
+
+# Logical keywords (and / or / not) vs bitwise symbols (& | ~ ^)
+if (x < MAX and not done) {
+    x = x + 1;
+} elif (x > 0 or done) {
+    x = x - 1;
+} else {
+    x = 0;
+}
+
+switch (x) {
+    case 1:
+        break;
+    default:
+        continue;
+}
+
+# All for loops iterate a generator / coroutine
+for int i in range(10) {
+    x = x * 2;
+    y = y / 2;
+}
+
+for var n in nums.iter() {
+    x = x + n;
+}
+
+while (true) {
+    do {
+        x = x | y;
+        x = x & y;
+        x = x ^ y;
+        x = ~x;
+    } while (false);
+}
+
+# Coroutines: coro<TYield, TResume, TReturn>
+# yield() is a method, not a keyword
+coro<int> ticker() {
+    yield(1);
+}
+
+coro<int, int> accumulator(int start) {
+    int total = start;
+    while (true) {
+        total += yield(total);
+    }
+}
+
+coro<int, void, int> counter(int val) {
+    int i = 0;
+    while (i < val) {
+        yield(i);
+        i += 1;
+    }
+    return i;
+}
+
+var g = new coro<int, void, int>(counter, 10);
+while g.resume() {
+    print(g.value());
+}
+print("Returned value was ", g.final());
+
+# Error handling
+try {
+    int bad = x / 0;
+} except {
+    raise Exception.DivByZero(); # Can add optional message
+}
+
+# Comparison operators
+a = x < y;
+a = x > y;
+a = x <= y;
+a = x >= y;
+a = x == y;
+a = x != y;
+
+# Bit shifts and modulo
+x = x << 2;
+x = x >> 2;
+x = x % 3;
+
+# Compound assignment operators
+x += 1;
+x -= 1;
+x *= 2;
+x /= 2;
+x %= 2;
+x |= 1;
+x &= 1;
+x ^= 1;
+x <<= 1;
+x >>= 1;
+
+origin.x = 5;
+int result = done ? 1 : 0;
+
+some_fn(x, y, z);
+
+return x;
+
+# Malformed cases, should fall to UNKNOWN + recovery
+'ab
+"bad\x escape"
+@unknown_char
+!
