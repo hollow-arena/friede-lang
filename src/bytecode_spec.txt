@@ -1,6 +1,8 @@
 Disassembled instructions:
 
-Integer ops (11):
+91 variations, 44 unique opcodes
+
+Integer ops (16) -- no args:
 
 add     a0 = a0 + a1
 sub     a0 = a0 - a1
@@ -13,65 +15,83 @@ not     a0 = ~a0
 and     a0 = a0 & a1
 lsh     a0 = a0 << a1
 rsh     a0 = a0 >> a1
+swap    a0, a1 = a1, a0
 
-Immediate ops (4):
+Move value to or from a0 or a1 to addr
+amovX   a0 = addr or a1 = addr or addr = a0 or addr = a1
+
+Immediate ops (8) -- var args:
 
 Load immediate, or bitshift then load immediate
-li0     a0 = imm
-li1     a1 = imm
-li0s    a0 = (a0 << 8) + imm
-li1s    a1 = (a1 << 8) + imm
+li0X    a0 = imm
+li1X    a1 = imm
 
-Load / store ops (9):
+Where (1 << X) is how many bytes to read after opcode
 
-Load value relative to frame pointer
+Load / store ops (18) -- 1 arg:
+
+Load value relative to frame pointer 
 lf0     a0 = stack[fp + imm]
 lf1     a1 = stack[fp + imm]
-
-Restore frame pointer and return address
-rest    ra = stack[fp]; fp = stack[fp + 1]
-
-Increment frame pointer
-ifp     fp += imm
 
 Or from bottom of stack (globals)
 lg0     a0 = stack[imm]
 lg1     a1 = stack[imm]
 
+Or from a loaded address (var args)
+la0X    a0 = *(addr + imm)
+la1X    a1 = *(addr + imm)
+
 Similar for store ops
 sf      stack[fp + imm] = a0
 sg      stack[imm] = a0
-sra     stack[fp + imm] = ip + 1
-sfp     stack[fp + imm] = fp
 
-GC (4):
-ireff   stack[fp + imm]->ref_count++
-dreff   stack[fp + imm]->ref_count--
-irefg   stack[imm]->ref_count++
-drefg   stack[imm]->ref_count--
+var args
+saX     *(addr + imm) = a0
 
-Branch ops (4):
+GC (2):
+iref    a0->ref_count++
+dref    a0->ref_count--
 
-Will check if MSB is 1, if so then make negative int32
-Likely will have jumps > 1000 instructions for large conditionals, so add argument
-+/- 8 million should be fine though
+Branch ops (16):
 
-beq     if (a0 == a1) ip += (imm << 16) + arg
-bne     if (a0 != a1) ip += (imm << 16) + arg
-blt     if (a0 < a1)  ip += (imm << 16) + arg
-bge     if (a0 >= a1) ip += (imm << 16) + arg
+beqX    if (a0 == a1) ip += imm
+bneX    if (a0 != a1) ip += imm
+bltX    if (a0 < a1)  ip += imm
+bgeX    if (a0 >= a1) ip += imm
 
-Jumps (1):
+Jumps (6):
 
-jmp     ip = a0
+Setting up new stack frame for next function
+jmpf    stack[fp + imm] = ip + 1; stack[fp + imm + 1] = fp; fp += imm; ip = (opcode*)a0
+
+Restore frame pointer, set ip to return address, move stack value to old fp
+ret     ip = (opcode*)stack[fp]; local = stack[fp + 1]; stack[fp + i] = stack[fp + i + imm] for i in range(a0 /* sizeof return value */ ); fp = local;
+
+Unconditional jump:
+jmpX    ip += imm
 
 C / C++ calls (1):
 
-stores returned values at stack[fp], callee must restore frame pointer
+stores returned values at stack[fp], all C functions should return void and just write values into the buffer at stack[fp]
 store function pointer in a0
 argument count implicit - C programmer responsible for pulling array values in domain of # of passed args
+no need to track return address, instruction pointer just picks up where it left off
 
-call    stack[fp] = c_func(FriedeVM* vm)
+ccall   fp += imm; vm->err = CErrCode, stack[fp] written by c_func(FriedeVM* vm); fp -= imm;
 
-Float ops ():
+Float ops (24):
 
+fadd    a0 = a0 + a1
+fsub    a0 = a0 - a1
+fmul    a0 = a0 * a1
+fdiv    a0 = a0 / a1
+
+a0 or a1
+itof    rd = (double)rd
+ftoi    rd = (int64)rd
+
+fbeqX   if (a0 == a1) ip += imm
+fbneX   if (a0 != a1) ip += imm
+fbltX   if (a0 <  a1) ip += imm
+fbgeX   if (a0 >= a1) ip += imm

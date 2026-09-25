@@ -9,21 +9,25 @@ extern "C" {
 // Assuming 4KB pages from VirtualAlloc / mmap, 1MB
 static const int STACK_SIZE = 256;
 
+typedef uint8_t opcode;
+
 typedef union
 {
-    int64_t i;
+    int64_t i; // also char and bool
     double f;
-    char c;
-    bool b;
     void* ptr;
 } FValue;
 
+typedef enum {
+    NONE
+} CErrCode;
+
 typedef struct {
                     // ra and fp should be stored at beginning of any new frame / function call
-    size_t ra;      // return address after finishing current frame
     size_t fp;      // start of current frame
-    size_t ip;      // instruction pointer
-    FValue a0, a1;  // two argument registers
+    opcode* ip;      // instruction pointer
+    CErrCode err;
+    FValue a0, a1, addr;  // two argument registers, and one specifically for pointers
     FValue *stack;
 } FriedeVM;
 
