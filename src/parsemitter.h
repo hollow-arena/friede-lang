@@ -6,22 +6,9 @@
 extern "C" {
 #endif
 
-typedef enum {
-    TYPE_VOID,
-    TYPE_INT,
-    TYPE_FLOAT,
-    TYPE_CHAR,
-    TYPE_BOOL,
-    TYPE_STR,
-    TYPE_INFER,
-    TYPE_ARRAY,
-    TYPE_WEAK,
-    TYPE_STRUCT,
-    TYPE_CLASS
-} Type;
-
+void push_one();
 void send_token(Token t);
-void build_lines();
+void build_all_exprs();
 
 #ifdef DEBUG
 int num_of_tokens();

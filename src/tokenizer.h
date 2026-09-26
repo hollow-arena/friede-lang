@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -154,7 +155,7 @@ extern const char *keywords[];
 
 extern const int keyword_len;
 
-char* generate_tokens(char* filepath);
+bool generate_tokens(char* filepath);
 
 #ifdef __cplusplus
 }

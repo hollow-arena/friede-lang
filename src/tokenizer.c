@@ -416,11 +416,12 @@ static void print_token(Token* t) {
 }
 #endif
 
-char* generate_tokens(char* filepath) {
+bool generate_tokens(char* filepath) {
 
     char *text = load_file(filepath);
-    if (!text) return NULL;
+    if (!text) return false;
     
+    push_one();
     Reader r = { .stream = text, .ptr = text, .line = 1, .col = 1 };
 
     Token t = {0};
@@ -434,9 +435,11 @@ char* generate_tokens(char* filepath) {
         send_token(t);
     }
 
+    free(text);
+
     #ifdef DEBUG
     printf("%d tokens were sent\n", num_of_tokens());
     #endif
 
-    return text;
+    return true;
 }

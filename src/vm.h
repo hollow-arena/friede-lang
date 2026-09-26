@@ -19,16 +19,23 @@ typedef union
 } FValue;
 
 typedef enum {
-    NONE
+    CERR_NONE,
+    CERR_ANY // placeholder
 } CErrCode;
+
+typedef enum {
+    FEX_NONE,
+    FEX_ANY // placeholder
+} FException;
 
 typedef struct {
                     // ra and fp should be stored at beginning of any new frame / function call
     size_t fp;      // start of current frame
     opcode* ip;      // instruction pointer
-    CErrCode err;
     FValue a0, a1, addr;  // two argument registers, and one specifically for pointers
     FValue *stack;
+    FException ex;
+    CErrCode err;
 } FriedeVM;
 
 typedef struct {

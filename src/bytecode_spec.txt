@@ -1,6 +1,6 @@
 Disassembled instructions:
 
-91 variations, 44 unique opcodes
+115 variations, 44 unique opcodes
 
 Integer ops (16) -- no args:
 
@@ -28,23 +28,23 @@ li1X    a1 = imm
 
 Where (1 << X) is how many bytes to read after opcode
 
-Load / store ops (18) -- 1 arg:
+Load / store ops (36) -- 1 arg:
 
 Load value relative to frame pointer 
-lf0     a0 = stack[fp + imm]
-lf1     a1 = stack[fp + imm]
+lf0X    a0 = stack[fp + imm]
+lf1X    a1 = stack[fp + imm]
 
 Or from bottom of stack (globals)
-lg0     a0 = stack[imm]
-lg1     a1 = stack[imm]
+lg0X    a0 = stack[imm]
+lg1X    a1 = stack[imm]
 
 Or from a loaded address (var args)
 la0X    a0 = *(addr + imm)
 la1X    a1 = *(addr + imm)
 
 Similar for store ops
-sf      stack[fp + imm] = a0
-sg      stack[imm] = a0
+sfX     stack[fp + imm] = a0
+sgX     stack[imm] = a0
 
 var args
 saX     *(addr + imm) = a0
@@ -60,13 +60,13 @@ bneX    if (a0 != a1) ip += imm
 bltX    if (a0 < a1)  ip += imm
 bgeX    if (a0 >= a1) ip += imm
 
-Jumps (6):
+Jumps (12):
 
 Setting up new stack frame for next function
-jmpf    stack[fp + imm] = ip + 1; stack[fp + imm + 1] = fp; fp += imm; ip = (opcode*)a0
+jmpfX   stack[fp + imm] = ip + 1; stack[fp + imm + 1] = fp; fp += imm; ip = (opcode*)a0
 
 Restore frame pointer, set ip to return address, move stack value to old fp
-ret     ip = (opcode*)stack[fp]; local = stack[fp + 1]; stack[fp + i] = stack[fp + i + imm] for i in range(a0 /* sizeof return value */ ); fp = local;
+retX    ip = (opcode*)stack[fp]; local = stack[fp + 1]; stack[fp + i] = stack[fp + i + imm] for i in range(a0 /* sizeof return value */ ); fp = local;
 
 Unconditional jump:
 jmpX    ip += imm
